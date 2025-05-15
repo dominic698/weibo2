@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
@@ -44,7 +45,7 @@ class PasswordController extends Controller
         // 5.入库，使用 updateOrInsert 来保持email的唯一
         DB::table('password_resets')->updateOrInsert(['email' => $email], [
             'email' => $email,
-            'token' => $token,
+            'token' => Hash::make($token),
             'created_at' => new Carbon()
         ]);
 
@@ -97,6 +98,7 @@ class PasswordController extends Controller
             }
 
             // 5.2. 检查是否正确
+            Log::log('debug',[$token,$record['token']]);
             if (!Hash::check($token, $record['token'])) {
                 session()->flash('danger', '令牌错误');
                 return redirect()->back();
